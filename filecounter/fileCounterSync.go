@@ -1,41 +1,12 @@
 package filecounter
 
 import (
-	"fmt"
 	"io/fs"
 )
 
 // Function to count the number of files in a folder (and in subfolders)
-// This function uses the fs.WalkDir under the hood, so it's dead easy
-func FileCounterEasy(fileSystem fs.FS) (int, error) {
-	// fmt.Println("Easy FileCounter started")
-
-	var numOfFiles int
-	err := fs.WalkDir(fileSystem, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-
-		if !d.IsDir() {
-			numOfFiles++
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return 0, nil
-	}
-
-	return numOfFiles, nil
-}
-
-// Function to count the number of files in a folder (and in subfolders)
 // This function "manually" cycles through the filesystem synchronously
 func FileCounterSync(fileSystem fs.FS) (int, error) {
-	// fmt.Println("Sync FileCounter started")
-
 	dir, err := fs.ReadDir(fileSystem, ".")
 	if err != nil {
 		return 0, err
@@ -44,9 +15,8 @@ func FileCounterSync(fileSystem fs.FS) (int, error) {
 	var numOfFiles int
 	for _, f := range dir {
 		if !f.IsDir() {
-			if err != nil {
-				return 0, err
-			}
+			// fmt.Printf("\nFound a file %s, before we had %d", f.Name(), numOfFiles)
+			numOfFiles++
 		} else {
 			dirs, err := fs.ReadDir(fileSystem, f.Name())
 			if err != nil {
@@ -55,9 +25,11 @@ func FileCounterSync(fileSystem fs.FS) (int, error) {
 
 			for _, file := range dirs {
 				if !file.IsDir() {
+					// fmt.Printf("\nFound a file %s, before we had %d", file.Name(), numOfFiles)
 					numOfFiles++
 				} else {
 					n, err := countFilesRecursively(fileSystem, f.Name(), file)
+					// fmt.Printf("\ncounted recursively %d, before we had %d", n, numOfFiles)
 					if err != nil {
 						return 0, err
 					}
@@ -82,6 +54,7 @@ func countFilesRecursively(fileSystem fs.FS, prevPath string, dir fs.DirEntry) (
 
 	for _, file := range dirs {
 		if !file.IsDir() {
+			// fmt.Printf("\nFound a file: %s", file.Name())
 			n++
 		} else {
 			num, err := countFilesRecursively(fileSystem, newPath, file)
@@ -94,8 +67,4 @@ func countFilesRecursively(fileSystem fs.FS, prevPath string, dir fs.DirEntry) (
 	}
 
 	return n, nil
-}
-
-func FileCounterAsync(fileSystem fs.FS) (int, error) {
-	return 0, nil
 }
