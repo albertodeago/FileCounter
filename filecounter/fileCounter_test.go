@@ -58,3 +58,16 @@ func TestFileCounter(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkFileCounterSync(b *testing.B) {
+	// run the Fib function b.N times
+	for n := 0; n < b.N; n++ {
+		FileCounterSync(fakeFS)
+	}
+}
+func BenchmarkFileCounterAsync(b *testing.B) {
+	// run the Fib function b.N times
+	for n := 0; n < b.N; n++ {
+		FileCounterAsync(fakeFS)
+	}
+}
