@@ -8,7 +8,11 @@ import (
 )
 
 func main() {
-	fs := os.DirFS("D:/sources/vue-virtualized-list/")
+	if len(os.Args) < 2 {
+		panic("Path must be specified as command line argument")
+	}
+	path := os.Args[1]
+	fs := os.DirFS(path)
 
 	start1 := time.Now()
 	res1, _ := filecounter.FileCounterEasy(fs)
